@@ -4,7 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getFileBuffer, extractAndRedactText, parseReportText } from "@/lib/parser";
 import { analyzeDisputeCandidates } from "@/lib/rules-engine";
-import { Bureau } from "@prisma/client";
+// Local types to avoid Prisma client generation issues during build
+type Bureau = 'EXPERIAN' | 'EQUIFAX' | 'TRANSUNION' | 'OTHER';
 
 export async function POST(request: Request) {
     try {

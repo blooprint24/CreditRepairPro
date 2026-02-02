@@ -5,9 +5,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const session = await getServerSession(authOptions);
 
         if (!session || !session.user) {
@@ -17,7 +18,7 @@ export async function PATCH(
         const { contentHtml } = await request.json();
 
         const letter = await prisma.letter.update({
-            where: { id: params.id, userId: (session.user as any).id },
+            where: { id: id, userId: (session.user as any).id },
             data: {
                 contentHtml,
                 version: { increment: 1 }

@@ -1,4 +1,6 @@
-import { Bureau, FindingCategory } from "@prisma/client";
+// Local types to avoid Prisma client generation issues during build
+type Bureau = 'EXPERIAN' | 'EQUIFAX' | 'TRANSUNION' | 'OTHER';
+type FindingCategory = 'PERSONAL_INFO' | 'COLLECTION' | 'TRADELINE' | 'INQUIRY' | 'BANKRUPTCY';
 import { ParsedData } from "./parser";
 import { DateTime } from "luxon";
 

@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
         // 2. Group findings by bureau
         const findingsByBureau: Record<string, any[]> = {};
-        approvedFindings.forEach(f => {
+        approvedFindings.forEach((f: any) => {
             if (!findingsByBureau[f.bureau]) findingsByBureau[f.bureau] = [];
             findingsByBureau[f.bureau].push(f);
         });
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
                 address: `${profile.addressLine1}, ${profile.city}, ${profile.state} ${profile.zipCode}`,
                 dob: profile.dob ? new Date(profile.dob).toLocaleDateString() : 'XX/XX/XXXX',
                 bureauName: bureau,
-                items: items.map(i => ({ category: i.category, rationale: i.rationale }))
+                items: items.map((i: any) => ({ category: i.category, rationale: i.rationale }))
             });
 
             const letter = await prisma.letter.create({

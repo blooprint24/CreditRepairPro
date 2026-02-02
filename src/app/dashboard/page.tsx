@@ -14,7 +14,8 @@ import {
     Clock,
     Mail,
     ArrowRight,
-    Loader2
+    Loader2,
+    CheckCircle2
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { UploadZone } from "@/components/UploadZone";

@@ -1,6 +1,18 @@
 "use client";
 
-import { Finding, FindingCategory, Bureau } from "@prisma/client";
+// Local types to avoid Prisma client generation issues during build
+type Bureau = 'EXPERIAN' | 'EQUIFAX' | 'TRANSUNION' | 'OTHER';
+type FindingCategory = 'PERSONAL_INFO' | 'COLLECTION' | 'TRADELINE' | 'INQUIRY' | 'BANKRUPTCY';
+
+interface Finding {
+    id: string;
+    bureau: Bureau;
+    category: FindingCategory;
+    rationale: string;
+    confidence: number;
+    isApproved: boolean;
+}
+
 import {
     AlertCircle,
     CheckCircle2,
@@ -29,6 +41,7 @@ const bureauColors: Record<Bureau, string> = {
     EXPERIAN: "text-blue-500 bg-blue-500/10 border-blue-500/20",
     EQUIFAX: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20",
     TRANSUNION: "text-slate-500 bg-slate-500/10 border-slate-500/20",
+    OTHER: "text-slate-400 bg-slate-400/10 border-slate-400/20",
 };
 
 export function FindingItem({ finding, onToggle }: FindingItemProps) {
