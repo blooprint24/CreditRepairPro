@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Bureau {
+  EXPERIAN
+  EQUIFAX
+  TRANSUNION
+}
+
+enum UploadStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum FindingCategory {
+  PERSONAL_INFO
+  COLLECTION
+  TRADELINE
+  INQUIRY
+  BANKRUPTCY
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  hashedPassword String
+  verified       Boolean       @default(false)
+  role           Role          @default(USER)
+  profile        Profile?
+  uploads        Upload[]
+  findings       Finding[]
+  letters        Letter[]
+  exports        Export[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Profile {
+  id               String  @id @default(cuid())
+  userId           String  @unique
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName         String?
+  addressLine1     String?
+  addressLine2     String?
+  city             String?
+  state            String?
+  zipCode          String?
+  phone            String?
+  emailForLetters  String?
+  dob              DateTime?
+  identityApproved Boolean @default(false)
+}
+
+model Upload {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filename   String
+  mimeType   String
+  size       Int
+  storageKey String
+  status     UploadStatus @default(PENDING)
+  reports    Report[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model Report {
+  id              String       @id @default(cuid())
+  uploadId        String
+  upload          Upload       @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  bureau          Bureau
+  rawTextRedacted String?      @db.Text
+  metadata        Json?
+  tradelines      Tradeline[]
+  collections     Collection[]
+  inquiries       Inquiry[]
+  createdAt       DateTime     @default(now())
+}
+
+model Tradeline {
+  id            String   @id @default(cuid())
+  reportId      String
+  report        Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  creditor      String
+  acctLast4     String?
+  status        String?
+  balance       Float?
+  limit         Float?
+  openedDate    DateTime?
+  lastReported  DateTime?
+  paymentStatus String?
+  remarks       String?
+}
+
+model Collection {
+  id               String   @id @default(cuid())
+  reportId         String
+  report           Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  agency           String
+  originalCreditor String?
+  acctLast4        String?
+  balance          Float?
+  dofd             DateTime?
+  lastReported     DateTime?
+  status           String?
+}
+
+model Inquiry {
+  id       String   @id @default(cuid())
+  reportId String
+  report   Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  subscriber    String
+  inquiryDate   DateTime
+  type          String? // Hard/Soft
+}
+
+model Finding {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bureau        Bureau
+  category      FindingCategory
+  relatedItemId String?
+  rationale     String
+  confidence    Float
+  evidenceRefs  Json?
+  isApproved    Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+}
+
+model Letter {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bureauOrCreditor String
+  contentHtml      String   @db.Text
+  version          Int      @default(1)
+  exports          Export[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Export {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  letterId   String?
+  letter     Letter?  @relation(fields: [letterId], references: [id])
+  format     String // PDF, DOCX, ZIP
+  storageKey String
+  createdAt  DateTime @default(now())
+}
