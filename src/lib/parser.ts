@@ -1,4 +1,4 @@
-import pdf from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 import { s3Client } from "./s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 
@@ -14,8 +14,9 @@ export interface ParsedData {
  * Extracts text from a PDF buffer and performs initial redaction of PII.
  */
 export async function extractAndRedactText(buffer: Buffer): Promise<string> {
-    const data = await pdf(buffer);
-    let text = data.text;
+    const parser = new PDFParse({ data: buffer });
+    const result = await parser.getText();
+    let text = result.text;
 
     // Basic PII Redaction
     // Mask SSN: XXX-XX-XXXX
